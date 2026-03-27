@@ -29,8 +29,8 @@ for R in R_values:
     vmax = (DeltaP * R**2) / (4.0 * mu * Lpipe)
     vavg = vmax / 2.0
     print(f"R = {R}")
-    print(f"v_max = {vmax:.4f}, v_avg = {vavg:.4f}")
-    print(f"Q = pi*DeltaP*R^4/(8*mu*L) = {Q_theory:.4f}")
+    print(f"v_max = {vmax:.4f} m/s, v_avg = {vavg:.4f} m/s")
+    print(f"Q = pi*DeltaP*R^4/(8*mu*L) = {Q_theory:.4f} m^3/s")
 
 def project_into_circle(x, y, R):
     rr = np.sqrt(x*x + y*y)
@@ -63,9 +63,9 @@ def setup_axes(ax, R, vmax):
 
     ax.set_xlim(0, Lpipe)
     ax.set_ylim(-R, R)
-    ax.set_xlabel("z (along pipe)")
-    ax.set_ylabel("y (radius)")
-    ax.set_title(f"Laminar pipe flow tracers | R={R}")
+    ax.set_xlabel("z (along pipe) [m]")
+    ax.set_ylabel("y (radius) [m]")
+    ax.set_title(f"Laminar pipe flow tracers | R={R} m\n")
 
     ax.plot([0, Lpipe], [ R,  R], color="white", linewidth=2)
     ax.plot([0, Lpipe], [-R, -R], color="white", linewidth=2)
@@ -89,14 +89,14 @@ for ax, R in zip(axes, R_values):
 
     sc = ax.scatter(z, y, s=6, c=v0, cmap=cmap, norm=norm, edgecolors="none")
     cbar = plt.colorbar(sc, ax=ax)
-    cbar.set_label("axial speed v(r)", color="white")
+    cbar.set_label("axial speed v(r) [m/s]", color="white")
     cbar.outline.set_edgecolor("white")
     cbar.ax.set_facecolor("black")
     cbar.ax.tick_params(colors="white")
     for t in cbar.ax.get_yticklabels():
         t.set_color("white")
 
-    states.append({"R": R, "x": x, "y": y, "z": z})
+    states.append({"R": R, "x": x, "y": y, "z": z, "ax": ax})
     scatters.append(sc)
 
 def update(_):
@@ -106,6 +106,7 @@ def update(_):
         x = state["x"]
         y = state["y"]
         z = state["z"]
+        ax = state["ax"]
 
         rr = np.sqrt(x*x + y*y)
         v = v_poiseuille(rr, R, DeltaP, mu, Lpipe)
@@ -125,6 +126,11 @@ def update(_):
 
         sc.set_offsets(np.c_[z, y])
         sc.set_array(v)
+        ax.set_title(
+            f"Laminar pipe flow tracers | R={R} m\n"
+            f"avg v = {np.mean(v):.4f} m/s"
+        )
+
         artists.append(sc)
 
     return artists
